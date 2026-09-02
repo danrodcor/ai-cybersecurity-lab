@@ -219,3 +219,12 @@ __marimo__/
 
 # Local VS Code workspace settings
 .vscode/
+
+# Terraform local files and potentially sensitive values
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
