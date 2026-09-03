@@ -22,6 +22,11 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 - `tests/` — Automated tests.
 - `sample-events/` — Synthetic security findings with no sensitive data.
 
+## Documentation
+
+- [Project charter](docs/project-charter.md)
+- [Environment setup notes](docs/setup-notes.md)
+
 ## Security principles
 
 - Least-privilege access
