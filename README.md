@@ -26,6 +26,7 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 
 - [Project charter](docs/project-charter.md)
 - [Environment setup notes](docs/setup-notes.md)
+- [Architecture](docs/architecture.md)
 
 ## Security principles
 
