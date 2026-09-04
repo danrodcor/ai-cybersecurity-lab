@@ -4,7 +4,9 @@ A portfolio project that demonstrates an AI-assisted cloud security detection an
 
 ## Project status
 
-Sprint 0 — Foundation
+- **Current sprint:** Sprint 1 — AWS Baseline
+- **Completed:** Sprint 0 — Foundation
+- **Current focus:** Terraform naming and tagging conventions
 
 ## Objective
 
