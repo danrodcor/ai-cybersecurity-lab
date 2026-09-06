@@ -31,6 +31,7 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 - [Architecture](docs/architecture.md)
 - [Threat model](docs/threat-model.md)
 - [Sprint 0 retrospective](docs/sprint-0-retrospective.md)
+- [Terraform state design](docs/terraform-state.md)
 
 ## Security principles
 
