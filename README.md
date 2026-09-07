@@ -4,9 +4,9 @@ A portfolio project that demonstrates an AI-assisted cloud security detection an
 
 ## Project status
 
-- **Current sprint:** Sprint 1 — AWS Baseline
-- **Completed:** Sprint 0 — Foundation
-- **Current focus:** Terraform naming and tagging conventions
+- **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline
+- **Current:** Sprint 2 — Detection Pipeline
+- **Next objective:** Create a protected evidence S3 bucket with encryption, versioning, and S3 Block Public Access.
 
 ## Objective
 
@@ -31,6 +31,7 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 - [Architecture](docs/architecture.md)
 - [Threat model](docs/threat-model.md)
 - [Sprint 0 retrospective](docs/sprint-0-retrospective.md)
+- [Sprint 1 retrospective](docs/sprint-1-retrospective.md)
 - [Terraform state design](docs/terraform-state.md)
 - [Terraform deployment role design](docs/terraform-deployment-role.md)
 
