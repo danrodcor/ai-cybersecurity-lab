@@ -228,3 +228,4 @@ __marimo__/
 *.tfvars.json
 crash.log
 crash.*.log
+**/backend.hcl
