@@ -34,6 +34,7 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 - [Sprint 1 retrospective](docs/sprint-1-retrospective.md)
 - [Terraform state design](docs/terraform-state.md)
 - [Terraform deployment role design](docs/terraform-deployment-role.md)
+- [EventBridge DLQ design](docs/eventbridge-dlq.md)
 
 ## Security principles
 
