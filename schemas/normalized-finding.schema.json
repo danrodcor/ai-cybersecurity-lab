@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danrodcor/ai-cybersecurity-lab/schemas/normalized-finding.schema.json",
+  "title": "Normalized Cloud Security Finding",
+  "description": "Versioned internal contract for normalized cloud-security findings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "finding_id",
+    "source",
+    "finding_type",
+    "title",
+    "description",
+    "severity",
+    "account_id",
+    "region",
+    "resource",
+    "activity",
+    "timestamps",
+    "recommendation",
+    "synthetic"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "finding_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "service",
+        "finding_id"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "AWS"
+          ]
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "finding_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "finding_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "severity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "label"
+      ],
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "label": {
+          "type": "string",
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      }
+    },
+    "account_id": {
+      "type": "string",
+      "pattern": "^[0-9]{12}$"
+    },
+    "region": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(?:-[a-z0-9]+)+-[0-9]+$"
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^arn:"
+        },
+        "account_id": {
+          "type": "string",
+          "pattern": "^[0-9]{12}$"
+        },
+        "region": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(?:-[a-z0-9]+)+-[0-9]+$"
+        }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "principal_type": {
+          "type": "string"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "source_ip": {
+          "type": "string"
+        },
+        "user_agent": {
+          "type": "string"
+        }
+      }
+    },
+    "activity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "service",
+        "blocked"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "api": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blocked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "threat": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tactic": {
+          "type": "string"
+        },
+        "technique": {
+          "type": "string"
+        },
+        "technique_id": {
+          "type": "string",
+          "pattern": "^T[0-9]{4}(?:\\.[0-9]{3})?$"
+        }
+      }
+    },
+    "recommendation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "synthetic": {
+      "type": "boolean"
+    },
+    "labels": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

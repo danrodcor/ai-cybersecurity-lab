@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "finding_id": "7f3fbec2-cf2a-4de7-9125-e345cd68c02f",
+  "source": {
+    "provider": "AWS",
+    "service": "GuardDuty",
+    "finding_id": "synthetic-guardduty-001"
+  },
+  "finding_type": "UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B",
+  "title": "Successful console login from an unusual source",
+  "description": "A synthetic finding representing a successful AWS console login from an IP address not previously associated with the IAM principal.",
+  "severity": {
+    "score": 8,
+    "label": "HIGH"
+  },
+  "account_id": "111122223333",
+  "region": "us-east-1",
+  "resource": {
+    "type": "IAMUser",
+    "id": "synthetic-security-analyst",
+    "arn": "arn:aws:iam::111122223333:user/synthetic-security-analyst",
+    "account_id": "111122223333",
+    "region": "us-east-1"
+  },
+  "actor": {
+    "principal_type": "IAMUser",
+    "principal_id": "synthetic-security-analyst",
+    "source_ip": "198.51.100.24",
+    "user_agent": "synthetic-test-client/1.0"
+  },
+  "activity": {
+    "action": "ConsoleLogin",
+    "service": "signin.amazonaws.com",
+    "api": "ConsoleLogin",
+    "blocked": false
+  },
+  "timestamps": {
+    "created_at": "2026-09-10T20:00:00Z",
+    "updated_at": "2026-09-10T20:00:00Z"
+  },
+  "threat": {
+    "tactic": "Initial Access",
+    "technique": "Valid Accounts",
+    "technique_id": "T1078"
+  },
+  "recommendation": "Validate the login with the account owner, review recent API activity, rotate credentials if unauthorized, and preserve relevant evidence.",
+  "synthetic": true,
+  "labels": [
+    "initial-access",
+    "valid-accounts",
+    "console-login"
+  ]
+}
