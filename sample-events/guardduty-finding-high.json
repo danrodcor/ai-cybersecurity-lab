@@ -1,0 +1,91 @@
+{
+  "version": "0",
+  "id": "11111111-2222-4333-8444-555555555555",
+  "detail-type": "Synthetic GuardDuty Finding",
+  "source": "com.danrodcor.securitylab.guardduty",
+  "account": "111122223333",
+  "time": "2026-09-11T14:30:00Z",
+  "region": "us-east-1",
+  "resources": [
+    "arn:aws:ec2:us-east-1:111122223333:instance/i-0123456789abcdef0"
+  ],
+  "detail": {
+    "schemaVersion": "2.0",
+    "accountId": "111122223333",
+    "region": "us-east-1",
+    "partition": "aws",
+    "id": "synthetic-finding-high-001",
+    "arn": "arn:aws:guardduty:us-east-1:111122223333:detector/EXAMPLE/finding/synthetic-finding-high-001",
+    "type": "Impact:EC2/MaliciousDomainRequest.Reputation",
+    "resource": {
+      "resourceType": "Instance",
+      "instanceDetails": {
+        "instanceId": "i-0123456789abcdef0",
+        "instanceType": "t3.micro",
+        "launchTime": "2026-09-11T12:00:00Z",
+        "availabilityZone": "us-east-1a",
+        "imageId": "ami-0123456789abcdef0",
+        "networkInterfaces": [
+          {
+            "networkInterfaceId": "eni-0123456789abcdef0",
+            "privateDnsName": "ip-10-0-1-10.ec2.internal",
+            "privateIpAddress": "10.0.1.10",
+            "privateIpAddresses": [
+              {
+                "privateDnsName": "ip-10-0-1-10.ec2.internal",
+                "privateIpAddress": "10.0.1.10"
+              }
+            ],
+            "publicDnsName": "",
+            "publicIp": "203.0.113.10",
+            "securityGroups": [
+              {
+                "groupId": "sg-0123456789abcdef0",
+                "groupName": "synthetic-lab-sg"
+              }
+            ],
+            "subnetId": "subnet-0123456789abcdef0",
+            "vpcId": "vpc-0123456789abcdef0"
+          }
+        ],
+        "tags": [
+          {
+            "key": "Project",
+            "value": "ai-cybersecurity-lab"
+          },
+          {
+            "key": "Environment",
+            "value": "dev"
+          }
+        ]
+      }
+    },
+    "service": {
+      "serviceName": "guardduty",
+      "detectorId": "EXAMPLEDETECTORID",
+      "action": {
+        "actionType": "DNS_REQUEST",
+        "dnsRequestAction": {
+          "domain": "malicious.example",
+          "protocol": "UDP",
+          "blocked": false
+        }
+      },
+      "resourceRole": "TARGET",
+      "additionalInfo": {
+        "sample": true,
+        "synthetic": true,
+        "source": "ai-cybersecurity-lab"
+      },
+      "eventFirstSeen": "2026-09-11T14:20:00Z",
+      "eventLastSeen": "2026-09-11T14:29:00Z",
+      "archived": false,
+      "count": 3
+    },
+    "severity": 8.0,
+    "createdAt": "2026-09-11T14:30:00Z",
+    "updatedAt": "2026-09-11T14:30:00Z",
+    "title": "Synthetic EC2 instance queried a malicious domain",
+    "description": "Synthetic high-severity finding created for local testing of the AI cybersecurity laboratory."
+  }
+}

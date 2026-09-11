@@ -1,0 +1,91 @@
+{
+  "version": "0",
+  "id": "66666666-7777-4888-8999-000000000000",
+  "detail-type": "Synthetic GuardDuty Finding",
+  "source": "com.danrodcor.securitylab.guardduty",
+  "account": "111122223333",
+  "time": "2026-09-11T15:00:00Z",
+  "region": "us-east-1",
+  "resources": [
+    "arn:aws:ec2:us-east-1:111122223333:instance/i-0fedcba9876543210"
+  ],
+  "detail": {
+    "schemaVersion": "2.0",
+    "accountId": "111122223333",
+    "region": "us-east-1",
+    "partition": "aws",
+    "id": "synthetic-finding-medium-001",
+    "arn": "arn:aws:guardduty:us-east-1:111122223333:detector/EXAMPLE/finding/synthetic-finding-medium-001",
+    "type": "Trojan:EC2/DropPoint!DNS",
+    "resource": {
+      "resourceType": "Instance",
+      "instanceDetails": {
+        "instanceId": "i-0fedcba9876543210",
+        "instanceType": "t3.micro",
+        "launchTime": "2026-09-11T12:30:00Z",
+        "availabilityZone": "us-east-1a",
+        "imageId": "ami-0fedcba9876543210",
+        "networkInterfaces": [
+          {
+            "networkInterfaceId": "eni-0fedcba9876543210",
+            "privateDnsName": "ip-10-0-1-20.ec2.internal",
+            "privateIpAddress": "10.0.1.20",
+            "privateIpAddresses": [
+              {
+                "privateDnsName": "ip-10-0-1-20.ec2.internal",
+                "privateIpAddress": "10.0.1.20"
+              }
+            ],
+            "publicDnsName": "",
+            "publicIp": "203.0.113.20",
+            "securityGroups": [
+              {
+                "groupId": "sg-0fedcba9876543210",
+                "groupName": "synthetic-lab-sg"
+              }
+            ],
+            "subnetId": "subnet-0fedcba9876543210",
+            "vpcId": "vpc-0fedcba9876543210"
+          }
+        ],
+        "tags": [
+          {
+            "key": "Project",
+            "value": "ai-cybersecurity-lab"
+          },
+          {
+            "key": "Environment",
+            "value": "dev"
+          }
+        ]
+      }
+    },
+    "service": {
+      "serviceName": "guardduty",
+      "detectorId": "EXAMPLEDETECTORID",
+      "action": {
+        "actionType": "DNS_REQUEST",
+        "dnsRequestAction": {
+          "domain": "drop-point.example",
+          "protocol": "UDP",
+          "blocked": false
+        }
+      },
+      "resourceRole": "TARGET",
+      "additionalInfo": {
+        "sample": true,
+        "synthetic": true,
+        "source": "ai-cybersecurity-lab"
+      },
+      "eventFirstSeen": "2026-09-11T14:50:00Z",
+      "eventLastSeen": "2026-09-11T14:59:00Z",
+      "archived": false,
+      "count": 1
+    },
+    "severity": 5.0,
+    "createdAt": "2026-09-11T15:00:00Z",
+    "updatedAt": "2026-09-11T15:00:00Z",
+    "title": "Synthetic EC2 instance queried a remote drop point",
+    "description": "Synthetic medium-severity finding created for local testing of the AI cybersecurity laboratory."
+  }
+}
