@@ -119,6 +119,68 @@ class FindingNormalizerTests(unittest.TestCase):
         ):
             normalize_finding(event)
 
+    def test_missing_detail_is_rejected(self) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-high.json"
+        )
+        event = load_json(fixture_path)
+        del event["detail"]
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"event\.detail must be a JSON object",
+        ):
+            normalize_finding(event)
+
+    def test_non_numeric_severity_is_rejected(self) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-high.json"
+        )
+        event = load_json(fixture_path)
+        event["detail"]["severity"] = "high"
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"detail\.severity must be numeric",
+        ):
+            normalize_finding(event)
+
+    def test_out_of_range_severity_is_rejected(self) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-high.json"
+        )
+        event = load_json(fixture_path)
+        event["detail"]["severity"] = 11.0
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"detail\.severity must be between 0 and 10",
+        ):
+            normalize_finding(event)
+
+    def test_missing_instance_id_is_rejected(self) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-high.json"
+        )
+        event = load_json(fixture_path)
+        del event["detail"]["resource"]["instanceDetails"]["instanceId"]
+
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"detail\.resource\.instanceDetails\.instanceId "
+                r"must be a non-empty string"
+            ),
+        ):
+            normalize_finding(event)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
