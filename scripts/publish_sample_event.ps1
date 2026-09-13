@@ -3,7 +3,7 @@ param(
     [ValidateSet("high", "medium")]
     [string]$Severity = "high",
 
-    [string]$Profile = "ai-cybersecurity-lab-dev",
+    [string]$AwsProfile = "ai-cybersecurity-lab-dev",
 
     [string]$Region = "us-east-1"
 )
@@ -24,15 +24,15 @@ try {
         throw "Fixture not found: $fixturePath"
     }
 
-    $env:AWS_PROFILE = $Profile
+    $env:AWS_PROFILE = $AwsProfile
 
     & aws sts get-caller-identity `
-        --profile $Profile `
+        --profile $AwsProfile `
         --region $Region `
         --output json *> $null
 
     if ($LASTEXITCODE -ne 0) {
-        throw "AWS authentication failed. Run: aws login --profile $Profile"
+        throw "AWS authentication failed. Run: aws login --profile $AwsProfile"
     }
 
     $fixture = Get-Content -LiteralPath $fixturePath -Raw |
@@ -87,7 +87,7 @@ try {
     $responseLines = & aws events put-events `
         --entries "file://$tempPath" `
         --region $Region `
-        --profile $Profile `
+        --profile $AwsProfile `
         --output json
 
     if ($LASTEXITCODE -ne 0) {
