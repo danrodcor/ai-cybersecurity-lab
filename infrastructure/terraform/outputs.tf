@@ -17,3 +17,13 @@ output "security_event_bus_arn" {
   description = "ARN of the EventBridge bus used to receive security findings."
   value       = aws_cloudwatch_event_bus.security_findings.arn
 }
+
+output "incident_table_name" {
+  description = "Name of the DynamoDB table used to store incident metadata."
+  value       = aws_dynamodb_table.incidents.name
+}
+
+output "incident_table_arn" {
+  description = "ARN of the DynamoDB table used to store incident metadata."
+  value       = aws_dynamodb_table.incidents.arn
+}
