@@ -229,3 +229,6 @@ __marimo__/
 crash.log
 crash.*.log
 **/backend.hcl
+!infrastructure/terraform/build/
+infrastructure/terraform/build/*
+!infrastructure/terraform/build/.gitkeep
