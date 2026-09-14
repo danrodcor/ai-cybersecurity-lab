@@ -6,7 +6,8 @@ A portfolio project that demonstrates an AI-assisted cloud security detection an
 
 - **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline
 - **Current:** Sprint 2 — Detection Pipeline
-- **Next objective:** Create a protected evidence S3 bucket with encryption, versioning, and S3 Block Public Access.
+- **Current progress:** Protected evidence storage, event ingestion, normalized finding schema, and EventBridge-to-Lambda routing are operational.
+- **Next objective:** Persist normalized findings in Amazon S3 and DynamoDB.
 
 ## Objective
 
@@ -35,6 +36,16 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 - [Terraform state design](docs/terraform-state.md)
 - [Terraform deployment role design](docs/terraform-deployment-role.md)
 - [EventBridge DLQ design](docs/eventbridge-dlq.md)
+
+## Local validation
+
+Activate the Python virtual environment and run the project validation script before committing changes:
+
+```powershell
+.\scripts\validate_project.ps1
+```
+
+The script validates the synthetic fixtures, normalized finding schema, Python unit tests, Terraform formatting and configuration, and Git whitespace.
 
 ## Security principles
 
