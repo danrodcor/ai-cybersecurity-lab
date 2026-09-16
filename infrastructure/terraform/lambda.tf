@@ -56,6 +56,32 @@ data "aws_iam_policy_document" "finding_normalizer_logs" {
       "${aws_cloudwatch_log_group.finding_normalizer.arn}:*",
     ]
   }
+
+  statement {
+    sid    = "WriteNormalizedEvidence"
+    effect = "Allow"
+
+    actions = [
+      "s3:PutObject",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.evidence.arn}/normalized-findings/*",
+    ]
+  }
+
+  statement {
+    sid    = "WriteIncidentMetadata"
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:PutItem",
+    ]
+
+    resources = [
+      aws_dynamodb_table.incidents.arn,
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "finding_normalizer_logs" {
@@ -78,6 +104,13 @@ resource "aws_lambda_function" "finding_normalizer" {
   architectures = ["x86_64"]
   memory_size   = 128
   timeout       = 10
+
+  environment {
+    variables = {
+      EVIDENCE_BUCKET_NAME = aws_s3_bucket.evidence.id
+      INCIDENT_TABLE_NAME  = aws_dynamodb_table.incidents.name
+    }
+  }
 
   tags = {
     Purpose = "NormalizeSecurityFindings"

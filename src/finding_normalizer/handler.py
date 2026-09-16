@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import uuid
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from typing import Any
 
 
@@ -343,24 +347,138 @@ def normalize_finding(
 
     return normalized
 
+def required_environment_variable(name: str) -> str:
+    """Return one required environment variable."""
+    value = os.environ.get(name, "").strip()
+
+    if not value:
+        raise RuntimeError(
+            f"Required environment variable is missing: {name}"
+        )
+
+    return value
+
+
+def persist_finding(
+    normalized: dict[str, Any],
+    s3_client: Any | None = None,
+    dynamodb_client: Any | None = None,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """Persist normalized evidence and searchable incident metadata."""
+    bucket_name = required_environment_variable(
+        "EVIDENCE_BUCKET_NAME"
+    )
+    table_name = required_environment_variable(
+        "INCIDENT_TABLE_NAME"
+    )
+
+    if s3_client is None or dynamodb_client is None:
+        import boto3
+
+        if s3_client is None:
+            s3_client = boto3.client("s3")
+
+        if dynamodb_client is None:
+            dynamodb_client = boto3.client("dynamodb")
+
+    finding_id = normalized["finding_id"]
+    evidence_key = (
+        f"normalized-findings/{finding_id}.json"
+    )
+
+    document = json.dumps(
+        normalized,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+    s3_client.put_object(
+        Bucket=bucket_name,
+        Key=evidence_key,
+        Body=document,
+        ContentType="application/json",
+        ServerSideEncryption="AES256",
+    )
+
+    current_time = now or datetime.now(timezone.utc)
+    expires_at = int(
+        (
+            current_time
+            + timedelta(days=30)
+        ).timestamp()
+    )
+
+    dynamodb_client.put_item(
+        TableName=table_name,
+        Item={
+            "finding_id": {
+                "S": finding_id,
+            },
+            "source_finding_id": {
+                "S": normalized["source"]["finding_id"],
+            },
+            "finding_type": {
+                "S": normalized["finding_type"],
+            },
+            "severity": {
+                "S": normalized["severity"]["label"],
+            },
+            "status": {
+                "S": "NEW",
+            },
+            "synthetic": {
+                "BOOL": normalized["synthetic"],
+            },
+            "account_id": {
+                "S": normalized["account_id"],
+            },
+            "region": {
+                "S": normalized["region"],
+            },
+            "created_at": {
+                "S": normalized["timestamps"]["created_at"],
+            },
+            "updated_at": {
+                "S": normalized["timestamps"]["updated_at"],
+            },
+            "evidence_key": {
+                "S": evidence_key,
+            },
+            "expires_at": {
+                "N": str(expires_at),
+            },
+        },
+    )
+
+    return {
+        "bucket_name": bucket_name,
+        "evidence_key": evidence_key,
+        "table_name": table_name,
+        "expires_at": expires_at,
+    }
 
 def lambda_handler(
     event: dict[str, Any],
     context: Any,
 ) -> dict[str, Any]:
-    """AWS Lambda entry point."""
+    """Normalize and persist one security finding."""
     normalized = normalize_finding(event)
+    persistence = persist_finding(normalized)
 
     LOGGER.info(
         json.dumps(
             {
-                "event": "finding_normalized",
+                "event": "finding_persisted",
                 "finding_id": normalized["finding_id"],
                 "source_finding_id": (
                     normalized["source"]["finding_id"]
                 ),
                 "severity": normalized["severity"]["label"],
                 "synthetic": normalized["synthetic"],
+                "evidence_key": persistence["evidence_key"],
+                "expires_at": persistence["expires_at"],
             },
             separators=(",", ":"),
         )

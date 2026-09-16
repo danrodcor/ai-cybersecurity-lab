@@ -1,7 +1,12 @@
 import json
 import sys
 import unittest
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 from pathlib import Path
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from jsonschema import Draft202012Validator
 from jsonschema import FormatChecker
@@ -11,6 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.finding_normalizer.handler import normalize_finding
+from src.finding_normalizer.handler import persist_finding
 
 
 SCHEMA_PATH = (
@@ -181,6 +187,139 @@ class FindingNormalizerTests(unittest.TestCase):
             ),
         ):
             normalize_finding(event)
+
+    def test_persist_finding_writes_evidence_and_metadata(
+        self,
+    ) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-high.json"
+        )
+        event = load_json(fixture_path)
+        normalized = normalize_finding(event)
+
+        s3_client = Mock()
+        dynamodb_client = Mock()
+        fixed_time = datetime(
+            2026,
+            9,
+            15,
+            18,
+            0,
+            tzinfo=timezone.utc,
+        )
+
+        environment = {
+            "EVIDENCE_BUCKET_NAME": "synthetic-evidence-bucket",
+            "INCIDENT_TABLE_NAME": "synthetic-incidents-table",
+        }
+
+        with patch.dict(
+            "os.environ",
+            environment,
+            clear=True,
+        ):
+            result = persist_finding(
+                normalized,
+                s3_client=s3_client,
+                dynamodb_client=dynamodb_client,
+                now=fixed_time,
+            )
+
+        s3_client.put_object.assert_called_once()
+        s3_request = s3_client.put_object.call_args.kwargs
+
+        self.assertEqual(
+            s3_request["Bucket"],
+            "synthetic-evidence-bucket",
+        )
+        self.assertEqual(
+            s3_request["Key"],
+            (
+                "normalized-findings/"
+                f"{normalized['finding_id']}.json"
+            ),
+        )
+        self.assertEqual(
+            s3_request["ContentType"],
+            "application/json",
+        )
+        self.assertEqual(
+            s3_request["ServerSideEncryption"],
+            "AES256",
+        )
+        self.assertEqual(
+            json.loads(s3_request["Body"]),
+            normalized,
+        )
+
+        dynamodb_client.put_item.assert_called_once()
+        dynamodb_request = (
+            dynamodb_client.put_item.call_args.kwargs
+        )
+        item = dynamodb_request["Item"]
+
+        expected_expiration = int(
+            (
+                fixed_time
+                + timedelta(days=30)
+            ).timestamp()
+        )
+
+        self.assertEqual(
+            dynamodb_request["TableName"],
+            "synthetic-incidents-table",
+        )
+        self.assertEqual(
+            item["finding_id"]["S"],
+            normalized["finding_id"],
+        )
+        self.assertEqual(
+            item["severity"]["S"],
+            "HIGH",
+        )
+        self.assertEqual(
+            item["status"]["S"],
+            "NEW",
+        )
+        self.assertTrue(
+            item["synthetic"]["BOOL"]
+        )
+        self.assertEqual(
+            item["expires_at"]["N"],
+            str(expected_expiration),
+        )
+        self.assertEqual(
+            result["expires_at"],
+            expected_expiration,
+        )
+
+    def test_persist_finding_requires_configuration(
+        self,
+    ) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-high.json"
+        )
+        event = load_json(fixture_path)
+        normalized = normalize_finding(event)
+
+        with patch.dict(
+            "os.environ",
+            {},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                "EVIDENCE_BUCKET_NAME",
+            ):
+                persist_finding(
+                    normalized,
+                    s3_client=Mock(),
+                    dynamodb_client=Mock(),
+                )
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
