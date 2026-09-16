@@ -51,6 +51,17 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run AI prompt builder unit tests" `
+        -Command {
+            python tests\test_prompt_builder.py
+        }
+
+    Invoke-ValidationStep `
+        -Name "Run AI investigator unit tests" `
+        -Command {
+            python tests\test_ai_investigator.py
+        }
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `
