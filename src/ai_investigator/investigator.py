@@ -50,6 +50,11 @@ def parse_investigation_response(
             "Bedrock response is not valid JSON"
         ) from error
 
+    if investigation.get("schema_version") != "1.0.0":
+        raise ValueError(
+            "Bedrock response has unsupported schema version"
+        )
+
     if investigation.get("confidence") not in ALLOWED_CONFIDENCE:
         raise ValueError(
             "Bedrock response has invalid confidence"

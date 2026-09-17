@@ -61,6 +61,13 @@ try {
         -Command {
             python tests\test_ai_investigator.py
         }
+
+    Invoke-ValidationStep `
+        -Name "Validate AI investigation schema" `
+        -Command {
+            python tests\test_ai_investigation_schema.py
+        }
+
     Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {

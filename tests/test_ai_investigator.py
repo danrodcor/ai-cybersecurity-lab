@@ -15,6 +15,7 @@ from src.ai_investigator.investigator import parse_investigation_response
 
 def valid_investigation() -> dict:
     return {
+        "schema_version": "1.0.0",
         "summary": "Suspicious DNS activity was observed.",
         "confidence": "HIGH",
         "observed_facts": [
@@ -157,6 +158,21 @@ class AiInvestigatorTests(unittest.TestCase):
             "not valid JSON",
         ):
             parse_investigation_response(response)
+
+    def test_unsupported_schema_version_is_rejected(
+        self,
+    ) -> None:
+        investigation = valid_investigation()
+        investigation["schema_version"] = "2.0.0"
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "unsupported schema version",
+        ):
+            parse_investigation_response(
+                bedrock_response(investigation)
+            )
+
 
     def test_response_cannot_bypass_human_approval(
         self,
