@@ -6,6 +6,7 @@ from typing import Any
 
 from src.ai_investigator.prompt_builder import SYSTEM_PROMPT
 from src.ai_investigator.prompt_builder import build_investigation_prompt
+from src.ai_investigator.evidence_collector import collect_evidence
 
 
 ALLOWED_CONFIDENCE = {
@@ -98,7 +99,8 @@ def investigate_finding(
 ) -> dict[str, Any]:
     """Investigate one finding without executing response actions."""
     selected_model = resolve_model_id(model_id)
-    prompt = build_investigation_prompt(normalized_finding)
+    evidence = collect_evidence(normalized_finding)
+    prompt = build_investigation_prompt(evidence)
 
     if bedrock_client is None:
         import boto3

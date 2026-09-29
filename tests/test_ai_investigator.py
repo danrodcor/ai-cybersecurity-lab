@@ -103,6 +103,65 @@ class AiInvestigatorTests(unittest.TestCase):
             "end_turn",
         )
 
+    def test_prompt_excludes_sensitive_identifiers(
+        self,
+    ) -> None:
+        client = Mock()
+        client.converse.return_value = bedrock_response()
+        finding = {
+            "schema_version": "1.0.0",
+            "finding_id": "finding-allowlist-test",
+            "account_id": "sensitive-account-id",
+            "resource": {
+                "type": "IAMUser",
+                "id": "sensitive-resource-id",
+                "arn": (
+                    "arn:aws:iam::sensitive-account-id:"
+                    "user/sensitive-resource-id"
+                ),
+                "account_id": "sensitive-account-id",
+                "region": "us-east-1",
+            },
+            "actor": {
+                "principal_type": "IAMUser",
+                "principal_id": "sensitive-principal-id",
+                "source_ip": "198.51.100.24",
+                "user_agent": "test-client",
+            },
+        }
+
+        investigate_finding(
+            finding,
+            bedrock_client=client,
+            model_id="test-model",
+        )
+
+        request = client.converse.call_args.kwargs
+        prompt = request["messages"][0]["content"][0][
+            "text"
+        ]
+
+        self.assertIn(
+            "198.51.100.24",
+            prompt,
+        )
+        self.assertNotIn(
+            "sensitive-account-id",
+            prompt,
+        )
+        self.assertNotIn(
+            "sensitive-resource-id",
+            prompt,
+        )
+        self.assertNotIn(
+            "sensitive-principal-id",
+            prompt,
+        )
+        self.assertNotIn(
+            "arn:aws:iam",
+            prompt,
+        )
+
     def test_model_id_can_come_from_environment(
         self,
     ) -> None:

@@ -63,6 +63,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run evidence collector unit tests" `
+        -Command {
+            python tests\test_evidence_collector.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Validate AI investigation schema" `
         -Command {
             python tests\test_ai_investigation_schema.py
