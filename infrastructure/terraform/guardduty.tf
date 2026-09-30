@@ -28,4 +28,17 @@ resource "aws_guardduty_detector_feature" "disabled" {
   detector_id = aws_guardduty_detector.main.id
   name        = each.value
   status      = "DISABLED"
+
+  dynamic "additional_configuration" {
+    for_each = each.value == "RUNTIME_MONITORING" ? toset([
+      "EC2_AGENT_MANAGEMENT",
+      "ECS_FARGATE_AGENT_MANAGEMENT",
+      "EKS_ADDON_MANAGEMENT",
+    ]) : toset([])
+
+    content {
+      name   = additional_configuration.value
+      status = "DISABLED"
+    }
+  }
 }
