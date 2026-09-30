@@ -15,7 +15,11 @@ flowchart TD
     subgraph Input["Untrusted input boundary"]
         A["Synthetic GuardDuty-compatible finding"]
         B["Amazon EventBridge custom bus"]
+        U["Amazon GuardDuty<br/>Native and sample findings"]
+        V["Amazon EventBridge default bus"]
+
         A --> B
+        U --> V
     end
 
     subgraph Processing["AWS detection and evidence boundary"]
@@ -61,6 +65,7 @@ flowchart TD
     end
 
     B --> C
+    V --> C
     D --> F
     E --> F
     H --> I
@@ -77,25 +82,26 @@ flowchart TD
 
 | Step | Source | Destination | Data |
 |---:|---|---|---|
-| 1 | Synthetic fixture | EventBridge | GuardDuty-compatible JSON with no sensitive data |
-| 2 | EventBridge | Normalizer Lambda | Original event envelope |
-| 3 | Normalizer Lambda | DynamoDB | Incident ID, severity, status, timestamps, and normalized metadata |
-| 4 | Normalizer Lambda | S3 | Raw and normalized evidence |
-| 5 | DynamoDB and S3 | Local investigation runner | Existing normalized finding selected for investigation |
-| 6 | Local investigation runner | Evidence collector | Normalized finding processed on the trusted workstation |
-| 7 | Evidence collector | Local Ollama model | Size-limited and allow-listed evidence package |
-| 8 | Local Ollama model | Schema and safety validator | Untrusted structured investigation candidate |
-| 9 | Schema and safety validator | S3 and DynamoDB | Validated investigation, provider metadata, and completion status |
-| 10 | Schema and safety validator | Step Functions | Approval-ready recommendation; planned integration |
-| 11 | Step Functions | Human reviewer | Evidence summary and proposed response |
-| 12 | Human reviewer | Dry-run response | Explicit approval or rejection |
-| 13 | Dry-run response | Audit trail | Simulated action result; no real containment |
+| 1 | Synthetic fixture | EventBridge custom bus | GuardDuty-compatible JSON with no sensitive data |
+| 2 | Amazon GuardDuty | EventBridge default bus | Native or AWS-generated sample finding |
+| 3 | EventBridge rules | Normalizer Lambda | Original event envelope |
+| 4 | Normalizer Lambda | DynamoDB | Incident ID, severity, status, timestamps, and normalized metadata |
+| 5 | Normalizer Lambda | S3 | Normalized evidence document |
+| 6 | DynamoDB and S3 | Local investigation runner | Existing normalized finding selected for investigation |
+| 7 | Local investigation runner | Evidence collector | Normalized finding processed on the trusted workstation |
+| 8 | Evidence collector | Local Ollama model | Size-limited and allow-listed evidence package |
+| 9 | Local Ollama model | Schema and safety validator | Untrusted structured investigation candidate |
+| 10 | Schema and safety validator | S3 and DynamoDB | Validated investigation, provider metadata, and completion status |
+| 11 | Schema and safety validator | Step Functions | Approval-ready recommendation; planned integration |
+| 12 | Step Functions | Human reviewer | Evidence summary and proposed response |
+| 13 | Human reviewer | Dry-run response | Explicit approval or rejection |
+| 14 | Dry-run response | Audit trail | Simulated action result; no real containment |
 
 ## Trust boundaries
 
 ### Untrusted input boundary
 
-Synthetic findings are treated as untrusted. Schema validation and normalization must occur before their fields are used by downstream components.
+Native GuardDuty findings and synthetic fixtures are treated as untrusted. AWS-generated sample findings are explicitly identified as synthetic before persistence. Schema validation and normalization must occur before their fields are used by downstream components.
 
 ### Evidence boundary
 
@@ -119,7 +125,9 @@ CloudWatch captures application logs and metrics. CloudTrail records relevant AW
 
 ## Security decisions
 
-- Use synthetic findings because GuardDuty is unavailable in the current account.
+- Accept native GuardDuty findings and synthetic fixtures through separate EventBridge routes that converge on the same normalizer.
+- Enable GuardDuty foundational detection in `us-east-1`; keep optional protection plans disabled unless a documented workload requires them.
+- Classify AWS-generated GuardDuty samples as synthetic evidence before persistence.
 - Do not place credentials, account identifiers, or sensitive data in event fixtures.
 - Preserve raw evidence separately from normalized incident metadata.
 - Send only required and size-limited evidence to the configured model provider; local Ollama access is restricted to loopback HTTP.
