@@ -320,6 +320,37 @@ class FindingNormalizerTests(unittest.TestCase):
                     s3_client=Mock(),
                     dynamodb_client=Mock(),
                 )
+    def test_native_guardduty_sample_is_synthetic(
+        self,
+    ) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "guardduty-finding-medium.json"
+        )
+        event = load_json(fixture_path)
+        event["source"] = "aws.guardduty"
+        event["detail-type"] = "GuardDuty Finding"
+        event["detail"]["service"]["additionalInfo"] = {
+            "type": "default",
+            "value": json.dumps(
+                {
+                    "threatListName": (
+                        "GeneratedFindingThreatListName"
+                    ),
+                    "sample": True,
+                },
+                separators=(",", ":"),
+            ),
+        }
+
+        normalized = normalize_finding(event)
+
+        self.assertTrue(normalized["synthetic"])
+        self.assertIn(
+            "synthetic",
+            normalized["labels"],
+        )
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

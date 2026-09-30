@@ -139,6 +139,38 @@ def recommendation_for(severity: str) -> str:
         "and preserve relevant evidence if suspicious."
     )
 
+def is_synthetic_finding(
+    service: dict[str, Any],
+) -> bool:
+    """Identify lab fixtures and native GuardDuty samples."""
+    additional_info = service.get(
+        "additionalInfo",
+        {},
+    )
+
+    if not isinstance(additional_info, dict):
+        return False
+
+    if additional_info.get("synthetic") is True:
+        return True
+
+    if additional_info.get("sample") is True:
+        return True
+
+    encoded_metadata = additional_info.get("value")
+
+    if not isinstance(encoded_metadata, str):
+        return False
+
+    try:
+        metadata = json.loads(encoded_metadata)
+    except json.JSONDecodeError:
+        return False
+
+    return (
+        isinstance(metadata, dict)
+        and metadata.get("sample") is True
+    )
 
 def normalize_finding(
     event: dict[str, Any],
@@ -249,14 +281,7 @@ def normalize_finding(
     if not isinstance(dns_action, dict):
         dns_action = {}
 
-    additional_info = service.get("additionalInfo", {})
-
-    if not isinstance(additional_info, dict):
-        additional_info = {}
-
-    is_synthetic = bool(
-        additional_info.get("synthetic", False)
-    )
+    is_synthetic = is_synthetic_finding(service)
 
     normalized_id = str(
         uuid.uuid5(

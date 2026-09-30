@@ -42,3 +42,46 @@ resource "aws_guardduty_detector_feature" "disabled" {
     }
   }
 }
+
+resource "aws_cloudwatch_event_rule" "guardduty_findings" {
+  name           = "${local.name_prefix}-native-guardduty-findings"
+  description    = "Routes native GuardDuty findings to the finding normalizer."
+  event_bus_name = "default"
+
+  event_pattern = jsonencode({
+    source = [
+      "aws.guardduty",
+    ]
+    detail-type = [
+      "GuardDuty Finding",
+    ]
+  })
+
+  tags = {
+    Purpose = "RouteNativeGuardDutyFindings"
+  }
+}
+
+resource "aws_lambda_permission" "allow_guardduty_eventbridge" {
+  statement_id  = "AllowNativeGuardDutyEventBridgeInvocation"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.finding_normalizer.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.guardduty_findings.arn
+}
+
+resource "aws_cloudwatch_event_target" "guardduty_findings" {
+  rule           = aws_cloudwatch_event_rule.guardduty_findings.name
+  event_bus_name = aws_cloudwatch_event_rule.guardduty_findings.event_bus_name
+  target_id      = "NativeGuardDutyFindingNormalizer"
+  arn            = aws_lambda_function.finding_normalizer.arn
+
+  retry_policy {
+    maximum_event_age_in_seconds = 3600
+    maximum_retry_attempts       = 2
+  }
+
+  depends_on = [
+    aws_lambda_permission.allow_guardduty_eventbridge,
+  ]
+}
