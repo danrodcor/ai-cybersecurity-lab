@@ -6,6 +6,10 @@ from datetime import datetime
 from datetime import timezone
 from typing import Any
 
+ALLOWED_PROVIDERS = {
+    "bedrock",
+    "ollama",
+}
 
 def required_environment_variable(name: str) -> str:
     """Return one required environment variable."""
@@ -32,6 +36,12 @@ def persist_investigation(
             "finding_id must be a non-empty string"
         )
 
+    provider = result.get("provider")
+
+    if provider not in ALLOWED_PROVIDERS:
+        raise ValueError(
+            "result.provider must be bedrock or ollama"
+        )
     model_id = result.get("model_id")
     investigation = result.get("investigation")
 
@@ -78,6 +88,7 @@ def persist_investigation(
     )
 
     document = {
+        "provider": provider,
         "finding_id": finding_id,
         "investigated_at": investigated_at,
         "model_id": model_id,
@@ -112,7 +123,8 @@ def persist_investigation(
             "SET investigation_key = :key, "
             "investigation_status = :status, "
             "investigated_at = :investigated_at, "
-            "investigation_model_id = :model_id"
+            "investigation_model_id = :model_id, "
+            "investigation_provider = :provider"
         ),
         ConditionExpression=(
             "attribute_exists(finding_id)"
@@ -130,12 +142,17 @@ def persist_investigation(
             ":model_id": {
                 "S": model_id,
             },
+            ":provider": {
+                "S": provider,
+            },
         },
     )
 
     return {
+        "provider": provider,
         "bucket_name": bucket_name,
         "investigation_key": investigation_key,
         "table_name": table_name,
         "investigated_at": investigated_at,
+
     }

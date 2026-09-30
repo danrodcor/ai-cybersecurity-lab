@@ -18,33 +18,37 @@ flowchart TD
         A --> B
     end
 
-    subgraph Processing["Detection and evidence boundary"]
+    subgraph Processing["AWS detection and evidence boundary"]
         C["Finding-normalizer Lambda"]
         D[("DynamoDB<br/>Incident metadata")]
         E[("Amazon S3<br/>Evidence archive")]
-        F["Evidence-collector Lambda"]
-        G["Allow-listed evidence package"]
 
         C --> D
         C --> E
-        D --> F
-        E --> F
-        F --> G
     end
 
-    subgraph AI["AI trust boundary"]
-        H["Amazon Bedrock"]
-        I["Output-validation Lambda"]
-        J{"Valid structured output?"}
-        K["Safe fallback and incident flag"]
+    subgraph Local["Local investigation boundary"]
+        F["Investigation runner"]
+        G["Evidence collector"]
+        H["Allow-listed evidence package"]
 
-        H --> I
+        F --> G
+        G --> H
+    end
+
+    subgraph AI["Local AI trust boundary"]
+        I["Ollama<br/>Qwen3 14B"]
+        J["Schema and safety validation"]
+        K{"Valid structured output?"}
+        T["Reject unsafe or invalid output"]
+
         I --> J
-        J -- "No" --> K
+        J --> K
+        K -- "No" --> T
     end
 
     subgraph Approval["Human-approval boundary"]
-        L["AWS Step Functions"]
+        L["AWS Step Functions<br/>(planned)"]
         M["Human reviewer"]
         N{"Decision"}
         O["Dry-run response Lambda"]
@@ -57,11 +61,14 @@ flowchart TD
     end
 
     B --> C
-    G --> H
-    J -- "Yes" --> L
+    D --> F
+    E --> F
+    H --> I
+    K -- "Yes" --> D
+    K -- "Yes" --> E
+    K -- "Yes" --> L
 
     C -. "Logs and metrics" .-> Q["Amazon CloudWatch"]
-    I -. "Logs and metrics" .-> Q
     L -. "Workflow history" .-> Q
     R["AWS control-plane activity"] -.-> S["AWS CloudTrail"]
 ```
@@ -74,13 +81,15 @@ flowchart TD
 | 2 | EventBridge | Normalizer Lambda | Original event envelope |
 | 3 | Normalizer Lambda | DynamoDB | Incident ID, severity, status, timestamps, and normalized metadata |
 | 4 | Normalizer Lambda | S3 | Raw and normalized evidence |
-| 5 | DynamoDB and S3 | Evidence collector | Only evidence required for the investigation |
-| 6 | Evidence collector | Bedrock | Size-limited and allow-listed evidence package |
-| 7 | Bedrock | Output validator | Untrusted structured investigation candidate |
-| 8 | Output validator | Step Functions | Validated recommendation or safe failure status |
-| 9 | Step Functions | Human reviewer | Evidence summary and proposed response |
-| 10 | Human reviewer | Dry-run response | Explicit approval or rejection |
-| 11 | Dry-run response | Audit trail | Simulated action result; no real containment |
+| 5 | DynamoDB and S3 | Local investigation runner | Existing normalized finding selected for investigation |
+| 6 | Local investigation runner | Evidence collector | Normalized finding processed on the trusted workstation |
+| 7 | Evidence collector | Local Ollama model | Size-limited and allow-listed evidence package |
+| 8 | Local Ollama model | Schema and safety validator | Untrusted structured investigation candidate |
+| 9 | Schema and safety validator | S3 and DynamoDB | Validated investigation, provider metadata, and completion status |
+| 10 | Schema and safety validator | Step Functions | Approval-ready recommendation; planned integration |
+| 11 | Step Functions | Human reviewer | Evidence summary and proposed response |
+| 12 | Human reviewer | Dry-run response | Explicit approval or rejection |
+| 13 | Dry-run response | Audit trail | Simulated action result; no real containment |
 
 ## Trust boundaries
 
@@ -92,9 +101,13 @@ Synthetic findings are treated as untrusted. Schema validation and normalization
 
 S3 and DynamoDB hold the authoritative incident evidence. Access is restricted through service-specific IAM roles, encryption, and public-access controls.
 
+### Local investigation boundary
+
+The local runner retrieves an existing normalized finding from AWS, applies the evidence allow-list, invokes the configured model, validates the result, and persists only an approved structured document. AWS credentials remain outside the model process.
+
 ### AI boundary
 
-Amazon Bedrock receives only allow-listed evidence. Model output is treated as untrusted and must pass structural and safety validation.
+Qwen3 14B currently runs through Ollama on the trusted workstation. The Ollama client accepts only loopback HTTP endpoints, and the model receives only size-limited, allow-listed evidence. Model output is untrusted and must satisfy the versioned JSON schema and safety checks before persistence. Amazon Bedrock remains an optional provider adapter for future use when account quotas become available.
 
 ### Human-approval boundary
 
@@ -109,7 +122,7 @@ CloudWatch captures application logs and metrics. CloudTrail records relevant AW
 - Use synthetic findings because GuardDuty is unavailable in the current account.
 - Do not place credentials, account identifiers, or sensitive data in event fixtures.
 - Preserve raw evidence separately from normalized incident metadata.
-- Send only required and size-limited evidence to Bedrock.
+- Send only required and size-limited evidence to the configured model provider; local Ollama access is restricted to loopback HTTP.
 - Validate AI output before storing or presenting it as a recommendation.
 - Keep evidence collection, AI processing, and response roles separate.
 - Require human approval before every simulated response.
@@ -119,12 +132,12 @@ CloudWatch captures application logs and metrics. CloudTrail records relevant AW
 
 ## Failure behavior
 
-- Invalid input is rejected and logged without invoking Bedrock.
-- Missing evidence produces an incomplete-investigation status.
-- Invalid AI output is preserved for analysis but cannot proceed to approval.
-- Workflow failures retain the incident and evidence for manual review.
-- Rejected or timed-out approvals execute no response.
-- Repeated failures create alerts without automatically retrying destructive actions.
+- Invalid input is rejected and logged without invoking the configured model.
+- Missing or oversized evidence stops the investigation before model invocation.
+- An unavailable local model leaves the existing AWS incident unchanged and available for retry.
+- Invalid or unsafe model output is rejected and cannot be persisted or forwarded for approval.
+- Persistence requires an existing DynamoDB incident and explicit human-approval metadata.
+- Workflow failures retain the original incident and evidence for manual review.
 
 ## Deployment approach
 

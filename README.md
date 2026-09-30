@@ -6,8 +6,8 @@ A portfolio project that demonstrates an AI-assisted cloud security detection an
 
 - **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline; Sprint 2 — Detection Pipeline
 - **Current:** Sprint 3 — AI Investigation
-- **Current progress:** Synthetic GuardDuty-compatible findings are normalized by Lambda, stored as encrypted evidence in Amazon S3, and indexed as incident metadata in DynamoDB.
-- **Next objective:** Run a minimal Amazon Bedrock invocation and document the selected model, permissions, response, and cost considerations.
+- **Current progress:** Normalized findings are reduced to allow-listed evidence, investigated locally with Qwen3 14B through Ollama, validated against a versioned JSON schema, and persisted to Amazon S3 and DynamoDB with explicit provider metadata.
+- **Next objective:** Add the approval-ready workflow while retaining Amazon Bedrock as an optional provider adapter when account quotas become available.
 
 ## Objective
 

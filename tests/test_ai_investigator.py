@@ -3,6 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 from unittest.mock import Mock
+from unittest.mock import MagicMock
 from unittest.mock import patch
 
 
@@ -10,6 +11,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.ai_investigator.investigator import investigate_finding
+from src.ai_investigator.investigator import (
+    investigate_finding_locally,
+)
 from src.ai_investigator.investigator import parse_investigation_response
 
 
@@ -89,6 +93,10 @@ class AiInvestigatorTests(unittest.TestCase):
         self.assertIn(
             "explicit human approval",
             request["system"][0]["text"],
+        )
+        self.assertEqual(
+            result["provider"],
+            "bedrock",
         )
         self.assertEqual(
             result["investigation"]["confidence"],
@@ -247,6 +255,79 @@ class AiInvestigatorTests(unittest.TestCase):
                 bedrock_response(investigation)
             )
 
+    def test_investigate_finding_locally_uses_ollama(
+        self,
+    ) -> None:
+        fixture_path = (
+            PROJECT_ROOT
+            / "sample-events"
+            / "normalized-finding.json"
+        )
+
+        with fixture_path.open(
+            encoding="utf-8"
+        ) as fixture_file:
+            finding = json.load(fixture_file)
+
+        api_response = {
+            "model": "qwen3:14b",
+            "message": {
+                "role": "assistant",
+                "content": json.dumps(
+                    valid_investigation()
+                ),
+            },
+            "prompt_eval_count": 250,
+            "eval_count": 80,
+            "done_reason": "stop",
+        }
+
+        response = MagicMock()
+        response.read.return_value = json.dumps(
+            api_response
+        ).encode("utf-8")
+
+        transport = MagicMock()
+        transport.return_value.__enter__.return_value = (
+            response
+        )
+
+        result = investigate_finding_locally(
+            finding,
+            transport=transport,
+        )
+
+        transport.assert_called_once()
+        request = transport.call_args.args[0]
+        payload = json.loads(
+            request.data.decode("utf-8")
+        )
+
+        self.assertEqual(
+            payload["model"],
+            "qwen3:14b",
+        )
+        self.assertFalse(
+            payload["think"]
+        )
+        self.assertEqual(
+            payload["format"]["properties"][
+                "requires_human_approval"
+            ]["const"],
+            True,
+        )
+        self.assertEqual(
+            result["provider"],
+            "ollama",
+        )
+        self.assertEqual(
+            result["investigation"]["confidence"],
+            "HIGH",
+        )
+        self.assertEqual(
+            result["usage"]["total_tokens"],
+            330,
+        )
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

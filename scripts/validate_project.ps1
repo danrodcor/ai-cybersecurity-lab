@@ -63,6 +63,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run local Ollama client unit tests" `
+        -Command {
+            python tests\test_ollama_client.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Run evidence collector unit tests" `
         -Command {
             python tests\test_evidence_collector.py

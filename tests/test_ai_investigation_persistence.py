@@ -16,6 +16,7 @@ from src.ai_investigator.persistence import persist_investigation
 
 def valid_result() -> dict:
     return {
+        "provider": "ollama",
         "model_id": "test-model",
         "investigation": {
             "schema_version": "1.0.0",
@@ -106,6 +107,10 @@ class AiInvestigationPersistenceTests(unittest.TestCase):
             "test-model",
         )
         self.assertEqual(
+            stored_document["provider"],
+            "ollama",
+        )
+        self.assertEqual(
             stored_document["investigated_at"],
             "2026-09-29T22:00:00Z",
         )
@@ -139,6 +144,12 @@ class AiInvestigationPersistenceTests(unittest.TestCase):
             "COMPLETED",
         )
         self.assertEqual(
+            dynamodb_request[
+                "ExpressionAttributeValues"
+            ][":provider"]["S"],
+            "ollama",
+        )
+        self.assertEqual(
             result["investigation_key"],
             "ai-investigations/finding-001.json",
         )
@@ -161,6 +172,22 @@ class AiInvestigationPersistenceTests(unittest.TestCase):
                     s3_client=Mock(),
                     dynamodb_client=Mock(),
                 )
+    def test_missing_provider_is_rejected(
+        self,
+    ) -> None:
+        result = valid_result()
+        del result["provider"]
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "result.provider",
+        ):
+            persist_investigation(
+                "finding-003",
+                result,
+                s3_client=Mock(),
+                dynamodb_client=Mock(),
+            )
 
     def test_unsafe_investigation_is_rejected(
         self,
