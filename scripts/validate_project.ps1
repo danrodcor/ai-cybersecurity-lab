@@ -93,6 +93,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run approval request builder tests" `
+        -Command {
+            python tests\test_approval_request_builder.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `
