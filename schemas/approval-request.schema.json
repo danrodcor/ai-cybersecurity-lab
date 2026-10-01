@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danrodcor/ai-cybersecurity-lab/schemas/approval-request.schema.json",
+  "title": "Human Approval Request",
+  "description": "Versioned contract for presenting a validated AI investigation to a human reviewer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "approval_id",
+    "finding_id",
+    "investigation_key",
+    "provider",
+    "model_id",
+    "summary",
+    "confidence",
+    "proposed_actions",
+    "status",
+    "requested_at",
+    "expires_at",
+    "requires_human_approval",
+    "response_mode"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "approval_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "finding_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "investigation_key": {
+      "type": "string",
+      "pattern": "^ai-investigations/[0-9a-fA-F-]{36}\\.json$"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "bedrock",
+        "ollama"
+      ]
+    },
+    "model_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ]
+    },
+    "proposed_actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 15,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "status": {
+      "type": "string",
+      "const": "PENDING"
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requires_human_approval": {
+      "type": "boolean",
+      "const": true
+    },
+    "response_mode": {
+      "type": "string",
+      "const": "DRY_RUN"
+    }
+  }
+}

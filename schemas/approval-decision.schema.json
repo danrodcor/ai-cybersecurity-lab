@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danrodcor/ai-cybersecurity-lab/schemas/approval-decision.schema.json",
+  "title": "Human Approval Decision",
+  "description": "Immutable record of a human decision for an AI-assisted security investigation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "approval_id",
+    "finding_id",
+    "investigation_key",
+    "decision",
+    "decided_by",
+    "decided_at",
+    "response_mode"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "approval_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "finding_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "investigation_key": {
+      "type": "string",
+      "pattern": "^ai-investigations/[0-9a-fA-F-]{36}\\.json$"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "APPROVED",
+        "REJECTED"
+      ]
+    },
+    "decided_by": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "comment": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "response_mode": {
+      "type": "string",
+      "const": "DRY_RUN"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "REJECTED"
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "then": {
+        "required": [
+          "comment"
+        ]
+      }
+    }
+  ]
+}

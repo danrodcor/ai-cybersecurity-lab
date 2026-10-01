@@ -87,6 +87,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Validate human approval schemas" `
+        -Command {
+            python tests\test_approval_schemas.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `
