@@ -105,6 +105,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run approval decision builder tests" `
+        -Command {
+            python tests\test_approval_decision_builder.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `
