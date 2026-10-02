@@ -4,12 +4,8 @@ from datetime import datetime
 from datetime import timezone
 from typing import Any
 
-from src.approval_workflow.request_builder import (
-    format_utc_timestamp,
-)
-from src.approval_workflow.request_builder import (
-    require_uuid,
-)
+from .request_builder import format_utc_timestamp
+from .request_builder import require_uuid
 
 
 ALLOWED_DECISIONS = {

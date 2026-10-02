@@ -4,19 +4,10 @@ import json
 import logging
 from typing import Any
 
-from src.approval_workflow.decision_builder import (
-    create_approval_decision,
-)
-from src.approval_workflow.persistence import (
-    persist_approval_decision,
-)
-from src.approval_workflow.persistence import (
-    persist_approval_request,
-)
-from src.approval_workflow.request_builder import (
-    create_approval_request,
-)
-
+from .decision_builder import create_approval_decision
+from .persistence import persist_approval_decision
+from .persistence import persist_approval_request
+from .request_builder import create_approval_request
 
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
