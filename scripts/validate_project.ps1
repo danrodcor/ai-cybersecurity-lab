@@ -117,6 +117,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run approval Lambda handler tests" `
+        -Command {
+            python tests\test_approval_handlers.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `
