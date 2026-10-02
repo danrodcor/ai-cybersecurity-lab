@@ -6,7 +6,7 @@ Planned architecture — not yet deployed.
 
 ## Overview
 
-The AI CloudSec Incident Responder uses an event-driven AWS architecture to process synthetic cloud-security findings, preserve evidence, generate an AI-assisted investigation, and require human approval before any simulated response.
+The AI CloudSec Incident Responder uses an event-driven AWS architecture to process native GuardDuty findings and synthetic security fixtures, preserve evidence, generate an AI-assisted investigation, and require human approval before any simulated response.
 
 ## Architecture diagram
 
@@ -52,10 +52,10 @@ flowchart TD
     end
 
     subgraph Approval["Human-approval boundary"]
-        L["AWS Step Functions<br/>(planned)"]
-        M["Human reviewer"]
+        L["AWS Step Functions"]
+        M["Human-review interface<br/>(planned)]
         N{"Decision"}
-        O["Dry-run response Lambda"]
+        O["Dry-run response Lambda<br/>(planned)]
         P["Close without action"]
 
         L --> M
@@ -92,7 +92,7 @@ flowchart TD
 | 8 | Evidence collector | Local Ollama model | Size-limited and allow-listed evidence package |
 | 9 | Local Ollama model | Schema and safety validator | Untrusted structured investigation candidate |
 | 10 | Schema and safety validator | S3 and DynamoDB | Validated investigation, provider metadata, and completion status |
-| 11 | Schema and safety validator | Step Functions | Approval-ready recommendation; planned integration |
+| 11 | Local runner or operator | Step Functions | Approval-ready investigation, evidence reference, and unique approval ID |
 | 12 | Step Functions | Human reviewer | Evidence summary and proposed response |
 | 13 | Human reviewer | Dry-run response | Explicit approval or rejection |
 | 14 | Dry-run response | Audit trail | Simulated action result; no real containment |
@@ -117,7 +117,7 @@ Qwen3 14B currently runs through Ollama on the trusted workstation. The Ollama c
 
 ### Human-approval boundary
 
-No response recommendation can reach the dry-run response function without an explicit human decision recorded by the workflow.
+AWS Step Functions now creates and monitors pending approval requests through dedicated Lambda functions and DynamoDB state. Human decisions are structurally validated, preserved in Amazon S3, and restricted to `DRY_RUN`. The reviewer interface and simulated response function remain planned.
 
 ### Audit boundary
 
@@ -129,7 +129,7 @@ CloudWatch captures application logs and metrics. CloudTrail records relevant AW
 - Enable GuardDuty foundational detection in `us-east-1`; keep optional protection plans disabled unless a documented workload requires them.
 - Classify AWS-generated GuardDuty samples as synthetic evidence before persistence.
 - Do not place credentials, account identifiers, or sensitive data in event fixtures.
-- Preserve raw evidence separately from normalized incident metadata.
+- Preserve normalized evidence in Amazon S3 separately from searchable incident metadata in DynamoDB.
 - Send only required and size-limited evidence to the configured model provider; local Ollama access is restricted to loopback HTTP.
 - Validate AI output before storing or presenting it as a recommendation.
 - Keep evidence collection, AI processing, and response roles separate.
