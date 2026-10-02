@@ -135,6 +135,12 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run dry-run response tests" `
+        -Command {
+            python tests\test_dry_run_response.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danrodcor/ai-cybersecurity-lab/schemas/dry-run-response.schema.json",
+  "title": "Simulated Security Response",
+  "description": "Auditable record of an approved response simulated without modifying cloud resources.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "response_id",
+    "finding_id",
+    "approval_id",
+    "approval_decision_key",
+    "decision",
+    "decided_by",
+    "response_mode",
+    "status",
+    "executed",
+    "simulated_at",
+    "simulated_actions",
+    "resource_changes",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "response_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "finding_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "approval_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "approval_decision_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "decision": {
+      "type": "string",
+      "const": "APPROVED"
+    },
+    "decided_by": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "response_mode": {
+      "type": "string",
+      "const": "DRY_RUN"
+    },
+    "status": {
+      "type": "string",
+      "const": "SIMULATED"
+    },
+    "executed": {
+      "type": "boolean",
+      "const": false
+    },
+    "simulated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "simulated_actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "status"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "status": {
+            "type": "string",
+            "const": "NOT_EXECUTED"
+          }
+        }
+      }
+    },
+    "resource_changes": {
+      "type": "integer",
+      "const": 0
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  }
+}

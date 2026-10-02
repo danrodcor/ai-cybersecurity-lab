@@ -15,6 +15,14 @@ locals {
       purpose     = "RecordApprovalDecisions"
       s3_prefix   = "approval-decisions"
     }
+
+    response = {
+      name        = "dry-run-response"
+      description = "Records approved response actions without modifying resources."
+      handler     = "approval_workflow.dry_run_response.lambda_handler"
+      purpose     = "SimulateApprovedResponses"
+      s3_prefix   = "dry-run-responses"
+    }
   }
 }
 
@@ -183,5 +191,12 @@ output "approval_decision_function_name" {
   description = "Name of the approval-decision Lambda function."
   value = (
     aws_lambda_function.approval_workflow["decision"].function_name
+  )
+}
+
+output "dry_run_response_function_name" {
+  description = "Name of the dry-run response Lambda function."
+  value = (
+    aws_lambda_function.approval_workflow["response"].function_name
   )
 }

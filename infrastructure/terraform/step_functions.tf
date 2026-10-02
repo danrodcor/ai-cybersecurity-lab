@@ -48,6 +48,8 @@ data "aws_iam_policy_document" "approval_state_machine" {
     resources = [
       aws_lambda_function.approval_workflow["request"].arn,
       "${aws_lambda_function.approval_workflow["request"].arn}:*",
+      aws_lambda_function.approval_workflow["response"].arn,
+      "${aws_lambda_function.approval_workflow["response"].arn}:*",
     ]
   }
 
@@ -221,10 +223,75 @@ resource "aws_sfn_state_machine" "approval_workflow" {
       }
 
       ApprovalApproved = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::lambda:invoke"
+
+        Parameters = {
+          FunctionName = (
+            aws_lambda_function.approval_workflow["response"].arn
+          )
+          Payload = {
+            "finding_id.$" = "$.finding_id"
+            "approval_id.$" = (
+              "$.approval_record.Item.approval_id.S"
+            )
+            "approval_decision_key.$" = (
+              "$.approval_record.Item.approval_decision_key.S"
+            )
+            "decision.$" = (
+              "$.approval_record.Item.approval_status.S"
+            )
+            "decided_by.$" = (
+              "$.approval_record.Item.approval_decided_by.S"
+            )
+            "response_mode.$" = (
+              "$.approval_record.Item.approval_response_mode.S"
+            )
+            "proposed_actions.$" = (
+              "$.request.approval_request.proposed_actions"
+            )
+          }
+        }
+
+        ResultSelector = {
+          "dry_run_response.$" = (
+            "$.Payload.dry_run_response"
+          )
+          "persistence.$" = "$.Payload.persistence"
+        }
+
+        ResultPath = "$.response"
+
+        Retry = [
+          {
+            ErrorEquals = [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+            ]
+            IntervalSeconds = 2
+            MaxAttempts     = 3
+            BackoffRate     = 2.0
+          }
+        ]
+
+        Catch = [
+          {
+            ErrorEquals = ["States.ALL"]
+            ResultPath  = "$.workflow_error"
+            Next        = "WorkflowFailed"
+          }
+        ]
+
+        Next = "ApprovalCompleted"
+      }
+
+      ApprovalCompleted = {
         Type = "Pass"
         Result = {
           workflow_status = "APPROVED"
           response_mode   = "DRY_RUN"
+          response_status = "SIMULATED"
         }
         ResultPath = "$.workflow"
         End        = true
