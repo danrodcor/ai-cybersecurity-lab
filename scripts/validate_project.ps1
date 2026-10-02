@@ -123,6 +123,18 @@ try {
         }
 
     Invoke-ValidationStep `
+        -Name "Run reviewer interface service tests" `
+        -Command {
+            python tests\test_reviewer_service.py
+        }
+
+    Invoke-ValidationStep `
+        -Name "Compile reviewer interface" `
+        -Command {
+            python -m py_compile app\reviewer.py
+        }
+
+    Invoke-ValidationStep `
         -Name "Check Terraform formatting" `
         -Command {
             terraform `
