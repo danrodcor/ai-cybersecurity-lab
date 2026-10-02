@@ -53,9 +53,9 @@ flowchart TD
 
     subgraph Approval["Human-approval boundary"]
         L["AWS Step Functions"]
-        M["Human-review interface<br/>(planned)]
+        M["Local Streamlit reviewer"]
         N{"Decision"}
-        O["Dry-run response Lambda<br/>(planned)]
+        O["Dry-run response Lambda"]
         P["Close without action"]
 
         L --> M
@@ -91,11 +91,13 @@ flowchart TD
 | 7 | Local investigation runner | Evidence collector | Normalized finding processed on the trusted workstation |
 | 8 | Evidence collector | Local Ollama model | Size-limited and allow-listed evidence package |
 | 9 | Local Ollama model | Schema and safety validator | Untrusted structured investigation candidate |
-| 10 | Schema and safety validator | S3 and DynamoDB | Validated investigation, provider metadata, and completion status |
 | 11 | Local runner or operator | Step Functions | Approval-ready investigation, evidence reference, and unique approval ID |
-| 12 | Step Functions | Human reviewer | Evidence summary and proposed response |
-| 13 | Human reviewer | Dry-run response | Explicit approval or rejection |
-| 14 | Dry-run response | Audit trail | Simulated action result; no real containment |
+| 12 | Step Functions and DynamoDB | Local Streamlit reviewer | Pending request, investigation summary, confidence, and proposed actions |
+| 13 | Local Streamlit reviewer | Approval-decision Lambda | Explicit approval or rejection with reviewer identity and comment |
+| 14 | Approval-decision Lambda | S3 and DynamoDB | Immutable decision evidence and updated approval state |
+| 15 | Step Functions | Dry-run response Lambda | Approved decision and proposed actions |
+| 16 | Dry-run response Lambda | S3 and DynamoDB | Simulated actions, zero resource changes, and auditable response evidence |
+| 17 | AWS services | CloudWatch and CloudTrail | Application logs, execution history, and control-plane activity |
 
 ## Trust boundaries
 
@@ -117,7 +119,9 @@ Qwen3 14B currently runs through Ollama on the trusted workstation. The Ollama c
 
 ### Human-approval boundary
 
-AWS Step Functions now creates and monitors pending approval requests through dedicated Lambda functions and DynamoDB state. Human decisions are structurally validated, preserved in Amazon S3, and restricted to `DRY_RUN`. The reviewer interface and simulated response function remain planned.
+### Human-approval boundary
+
+AWS Step Functions creates and monitors pending approval requests through dedicated Lambda functions and DynamoDB state. A local Streamlit reviewer interface presents the validated investigation and invokes the approval-decision Lambda. Only an `APPROVED` decision can reach the dry-run response Lambda, which records every proposed action as `NOT_EXECUTED`, reports zero resource changes, and preserves the result in Amazon S3 and DynamoDB.
 
 ### Audit boundary
 
