@@ -30,8 +30,11 @@ data "archive_file" "approval_workflow" {
     "ai_investigator/*",
     "finding_normalizer",
     "finding_normalizer/*",
+    "reviewer_interface",
+    "reviewer_interface/*",
     "approval_workflow/__pycache__",
     "approval_workflow/__pycache__/*",
+
   ]
 }
 
