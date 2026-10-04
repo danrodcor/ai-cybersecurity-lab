@@ -67,6 +67,19 @@ data "aws_iam_policy_document" "approval_state_machine" {
   }
 
   statement {
+    sid    = "UpdateExpiredApprovalStatus"
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:UpdateItem",
+    ]
+
+    resources = [
+      aws_dynamodb_table.incidents.arn,
+    ]
+  }
+
+  statement {
     sid    = "DeliverExecutionLogs"
     effect = "Allow"
 
@@ -308,6 +321,50 @@ resource "aws_sfn_state_machine" "approval_workflow" {
       }
 
       ApprovalExpired = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::dynamodb:updateItem"
+
+        Parameters = {
+          TableName = aws_dynamodb_table.incidents.name
+
+          Key = {
+            finding_id = {
+              "S.$" = "$.finding_id"
+            }
+          }
+
+          UpdateExpression    = "SET approval_status = :expired"
+          ConditionExpression = "approval_status = :pending AND approval_id = :approval_id"
+
+          ExpressionAttributeValues = {
+            ":expired" = {
+              S = "EXPIRED"
+            }
+            ":pending" = {
+              S = "PENDING"
+            }
+            ":approval_id" = {
+              "S.$" = (
+                "$.approval_record.Item.approval_id.S"
+              )
+            }
+          }
+        }
+
+        ResultPath = "$.expiration"
+
+        Catch = [
+          {
+            ErrorEquals = ["States.ALL"]
+            ResultPath  = "$.workflow_error"
+            Next        = "WorkflowFailed"
+          }
+        ]
+
+        Next = "ApprovalExpiredCompleted"
+      }
+
+      ApprovalExpiredCompleted = {
         Type = "Pass"
         Result = {
           workflow_status = "EXPIRED"
