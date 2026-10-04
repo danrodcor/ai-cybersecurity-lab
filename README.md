@@ -4,10 +4,10 @@ A portfolio project that demonstrates an AI-assisted cloud security detection an
 
 ## Project status
 
-- **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline; Sprint 2 — Detection Pipeline; Sprint 3 — AI Investigation
-- **Current:** Sprint 4 — Approval & Portfolio
-- **Current progress:** Native and synthetic GuardDuty findings are normalized and investigated locally with Qwen3 14B through Ollama. Validated investigations enter a Streamlit and AWS Step Functions approval workflow with tested `APPROVED`, `REJECTED`, and `EXPIRED` branches. Approved actions invoke a dry-run Lambda that performs zero resource changes.
-- **Next objective:** Complete the security and cost review, capture final demonstration evidence, and write the portfolio case study.
+- **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline; Sprint 2 — Detection Pipeline; Sprint 3 — AI Investigation; Sprint 4 — Approval & Portfolio
+- **Current:** Portfolio-ready implementation
+- **Current progress:** The complete workflow has been implemented and validated across `APPROVED`, `REJECTED`, and `EXPIRED` outcomes, with encrypted evidence, local AI investigation, human approval, dry-run response, audit records, cost controls, and portfolio documentation.
+- **Next objective:** Capture selected screenshots, prepare a concise recruiter-facing project summary, and consider optional enhancements without expanding the core scope.
 
 ## Objective
 
