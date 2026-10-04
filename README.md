@@ -4,18 +4,18 @@ A portfolio project that demonstrates an AI-assisted cloud security detection an
 
 ## Project status
 
-- **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline; Sprint 2 — Detection Pipeline
-- **Current:** Sprint 3 — AI Investigation
-- **Current progress:** Native and synthetic GuardDuty findings are normalized, investigated locally with Qwen3 14B through Ollama, reviewed through a local Streamlit interface, orchestrated by AWS Step Functions, and recorded by a dry-run response Lambda that makes zero resource changes.
-- **Next objective:** Validate the approved, rejected, and expired workflow branches end to end and capture final portfolio evidence.
+- **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline; Sprint 2 — Detection Pipeline; Sprint 3 — AI Investigation
+- **Current:** Sprint 4 — Approval & Portfolio
+- **Current progress:** Native and synthetic GuardDuty findings are normalized and investigated locally with Qwen3 14B through Ollama. Validated investigations enter a Streamlit and AWS Step Functions approval workflow with tested `APPROVED`, `REJECTED`, and `EXPIRED` branches. Approved actions invoke a dry-run Lambda that performs zero resource changes.
+- **Next objective:** Complete the security and cost review, capture final demonstration evidence, and write the portfolio case study.
 
 ## Objective
 
 Build a secure and auditable pipeline that receives cloud-security findings, normalizes the evidence, uses generative AI to assist the investigation, and proposes response actions for human approval.
 
-## Planned workflow
+## Implemented workflow
 
-Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 and DynamoDB → Amazon Bedrock → Human approval
+GuardDuty finding → EventBridge → finding-normalizer Lambda → Amazon S3 and DynamoDB → local Ollama investigation → schema validation → Streamlit reviewer and AWS Step Functions → dry-run response Lambda → audit trail
 
 ## Repository structure
 
@@ -30,12 +30,16 @@ Synthetic GuardDuty finding → Amazon EventBridge → AWS Lambda → Amazon S3 
 - [Project charter](docs/project-charter.md)
 - [Environment setup notes](docs/setup-notes.md)
 - [Architecture](docs/architecture.md)
+- [Approval workflow validation](docs/approval-workflow-validation.md)
+- [Security and cost review](docs/security-cost-review.md)
 - [Threat model](docs/threat-model.md)
 - [Sprint 0 retrospective](docs/sprint-0-retrospective.md)
 - [Sprint 1 retrospective](docs/sprint-1-retrospective.md)
 - [Terraform state design](docs/terraform-state.md)
 - [Terraform deployment role design](docs/terraform-deployment-role.md)
 - [EventBridge DLQ design](docs/eventbridge-dlq.md)
+- [End-to-end demo walkthrough](docs/demo-walkthrough.md)
+
 
 ## Local validation
 
@@ -58,7 +62,7 @@ The script validates the synthetic fixtures, normalized finding schema, Python u
 
 ## Known limitation
 
-Amazon GuardDuty is restricted in the current AWS account. The lab will use synthetic GuardDuty-compatible findings delivered through EventBridge.
+Amazon Bedrock inference quotas remain unavailable for this AWS account. The lab therefore uses local Qwen3 14B through Ollama as its active model provider while retaining the Bedrock adapter for future use. Amazon GuardDuty is enabled in `us-east-1` with cost-controlled foundational protection.
 
 ## Roadmap
 
