@@ -39,6 +39,7 @@ GuardDuty finding → EventBridge → finding-normalizer Lambda → Amazon S3 an
 - [Terraform deployment role design](docs/terraform-deployment-role.md)
 - [EventBridge DLQ design](docs/eventbridge-dlq.md)
 - [End-to-end demo walkthrough](docs/demo-walkthrough.md)
+- [Portfolio case study](docs/portfolio-case-study.md)
 
 
 ## Local validation
