@@ -1,17 +1,30 @@
 # AI CloudSec Incident Responder Lab
 
-A portfolio project that demonstrates an AI-assisted cloud security detection and incident-response workflow built on AWS.
+An end-to-end cloud security portfolio project that ingests Amazon GuardDuty findings, investigates allow-listed evidence with a local AI model, requires explicit human approval, and records only non-destructive dry-run responses.
 
-## Project status
+**Status:** Portfolio ready. The complete workflow has been implemented and validated across `APPROVED`, `REJECTED`, and `EXPIRED` outcomes.
 
-- **Completed:** Sprint 0 — Foundation; Sprint 1 — AWS Baseline; Sprint 2 — Detection Pipeline; Sprint 3 — AI Investigation; Sprint 4 — Approval & Portfolio
-- **Current:** Portfolio-ready implementation
-- **Current progress:** The complete workflow has been implemented and validated across `APPROVED`, `REJECTED`, and `EXPIRED` outcomes, with encrypted evidence, local AI investigation, human approval, dry-run response, audit records, cost controls, and portfolio documentation.
-- **Next objective:** Capture selected screenshots, prepare a concise recruiter-facing project summary, and consider optional enhancements without expanding the core scope.
+## What this project demonstrates
 
-## Objective
+- Event-driven security finding ingestion and normalization on AWS.
+- Encrypted evidence preservation in Amazon S3 and incident tracking in DynamoDB.
+- Evidence minimization before local analysis with Ollama and Qwen3 14B.
+- Versioned JSON schemas and safety validation for untrusted AI output.
+- Human review through Streamlit and orchestration with AWS Step Functions.
+- Auditable dry-run response execution with zero infrastructure changes.
+- Least-privilege IAM, Terraform-managed infrastructure, logging, and cost controls.
 
-Build a secure and auditable pipeline that receives cloud-security findings, normalizes the evidence, uses generative AI to assist the investigation, and proposes response actions for human approval.
+## Technology stack
+
+| Area | Technologies |
+|---|---|
+| Detection and ingestion | Amazon GuardDuty, Amazon EventBridge |
+| Processing | AWS Lambda, Python |
+| Evidence and metadata | Amazon S3, Amazon DynamoDB |
+| AI investigation | Ollama, Qwen3 14B, JSON Schema |
+| Human approval | Streamlit, AWS Step Functions |
+| Infrastructure | Terraform |
+| Audit and cost controls | Amazon CloudWatch, AWS CloudTrail, AWS Budgets |
 
 ## Implemented workflow
 
