@@ -17,6 +17,34 @@ Build a secure and auditable pipeline that receives cloud-security findings, nor
 
 GuardDuty finding → EventBridge → finding-normalizer Lambda → Amazon S3 and DynamoDB → local Ollama investigation → schema validation → Streamlit reviewer and AWS Step Functions → dry-run response Lambda → audit trail
 
+## Demonstration evidence
+
+### Architecture overview
+
+![AI CloudSec Incident Responder architecture](docs/images/architecture-overview.png)
+
+### Human approval
+
+The reviewer receives the validated investigation, proposed actions, model metadata, and an explicit warning that only a simulated response is authorized.
+
+![Pending human approval](docs/images/reviewer-interface-pending.png)
+
+The decision is recorded with the reviewer identity, comment, timestamp, and `DRY_RUN` response mode.
+
+![Recorded approval decision](docs/images/reviewer-interface-approved.png)
+
+### Approval orchestration
+
+AWS Step Functions evaluates the stored decision and follows the approved branch to completion.
+
+![Successful Step Functions approval workflow](docs/images/approval-workflow.png)
+
+### Safe response execution
+
+The approved response remains non-destructive: it is recorded as `SIMULATED`, with `executed` set to `false` and zero resource changes.
+
+![Dry-run response with zero resource changes](docs/images/dry-run-response.png)
+
 ## Repository structure
 
 - `docs/` — Architecture, setup notes, threat model, and project decisions.
