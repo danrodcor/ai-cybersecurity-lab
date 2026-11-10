@@ -4,6 +4,8 @@ An end-to-end cloud security portfolio project that ingests Amazon GuardDuty fin
 
 **Status:** Portfolio ready. The complete workflow has been implemented and validated across `APPROVED`, `REJECTED`, and `EXPIRED` outcomes.
 
+**Infrastructure status:** The live AWS environment was decommissioned on November 10, 2026 after successful validation. The Terraform configuration, documentation, screenshots, and sanitized evidence remain available for reproducibility.
+
 ## What this project demonstrates
 
 - Event-driven security finding ingestion and normalization on AWS.
